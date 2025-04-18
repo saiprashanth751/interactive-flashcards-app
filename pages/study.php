@@ -8,6 +8,8 @@ if (!isset($_SESSION['user_id'])) {
 
 include '../includes/db.php';
 
+// We get user id from session and deck id from url/route (like react param)...
+// I am fetching user id to check mastery status...
 $user_id = $_SESSION['user_id'];
 $deck_id = $_GET['deck_id'] ?? null;
 
@@ -16,9 +18,12 @@ if (!$deck_id) {
     exit();
 }
 
-// Fetch the deck with category_id included
-$stmt = $pdo->prepare("SELECT id, title, is_mastered, category_id FROM decks WHERE id = ? AND user_id = ?");
-$stmt->execute([$deck_id, $user_id]);
+// Fetch the deck with category_id included with mastery status..
+$stmt = $pdo->prepare("SELECT d.id, d.title, d.category_id, COALESCE(udm.is_mastered, 0) AS is_mastered 
+                       FROM decks d 
+                       LEFT JOIN user_deck_mastery udm ON d.id = udm.deck_id AND udm.user_id = ? 
+                       WHERE d.id = ?");
+$stmt->execute([$user_id, $deck_id]);
 $deck = $stmt->fetch();
 
 if (!$deck) {
@@ -29,7 +34,7 @@ if (!$deck) {
 $deck['is_mastered'] = (bool) $deck['is_mastered'];
 $category_id = $deck['category_id'];
 
-// Fetch flashcards
+// Fetch flashcards of that particular deck using simply query...
 $stmt = $pdo->prepare("SELECT id, question, answer FROM flashcards WHERE deck_id = ?");
 $stmt->execute([$deck_id]);
 $flashcards = $stmt->fetchAll();
@@ -40,6 +45,7 @@ if (empty($flashcards)) {
 }
 
 // Fetch suggested decks in the same category (including shared decks)
+// ignore the shared deck feature...need to work...
 try {
     $stmt = $pdo->prepare("
         SELECT d.id, d.title, d.description 
@@ -61,7 +67,7 @@ try {
 
 // Function to check achievements
 function checkAchievements($pdo, $user_id) {
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM decks WHERE user_id = ? AND is_mastered = 1");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_deck_mastery WHERE user_id = ? AND is_mastered = 1");
     $stmt->execute([$user_id]);
     $mastered_decks = $stmt->fetchColumn();
 
@@ -89,10 +95,12 @@ $debug_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_mastery'])) {
     $new_status = $deck['is_mastered'] ? 0 : 1;
 
-    $stmt = $pdo->prepare("UPDATE decks SET is_mastered = ?, last_studied_at = NOW() WHERE id = ? AND user_id = ?");
-    $stmt->execute([$new_status, $deck_id, $user_id]);
-
     if ($new_status) {
+        $stmt = $pdo->prepare("INSERT INTO user_deck_mastery (user_id, deck_id, is_mastered, mastered_at) 
+                               VALUES (?, ?, ?, NOW()) 
+                               ON DUPLICATE KEY UPDATE is_mastered = ?, mastered_at = NOW()");
+        $stmt->execute([$user_id, $deck_id, 1, 1]);
+        
         $stmt = $pdo->prepare("
             INSERT INTO study_sessions (user_id, deck_id, card_id, status, studied_at, next_review, interval_days)
             SELECT ?, ?, f.id, 'mastered', NOW(), DATE_ADD(NOW(), INTERVAL 1 DAY), 1
@@ -105,6 +113,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_mastery'])) {
         $stmt->execute([$user_id]);
 
         checkAchievements($pdo, $user_id);
+    } else {
+        $stmt = $pdo->prepare("UPDATE user_deck_mastery SET is_mastered = 0, mastered_at = NULL WHERE user_id = ? AND deck_id = ?");
+        $stmt->execute([$user_id, $deck_id]);
     }
 
     header("Location: study.php?deck_id=$deck_id");
@@ -112,8 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_mastery'])) {
 }
 
 // Update last_studied_at
-$stmt = $pdo->prepare("UPDATE decks SET last_studied_at = NOW() WHERE id = ? AND user_id = ?");
-$stmt->execute([$deck_id, $user_id]);
+$stmt = $pdo->prepare("UPDATE decks SET last_studied_at = NOW() WHERE id = ?");
+$stmt->execute([$deck_id]);
 ?>
 
 <!DOCTYPE html>
@@ -211,7 +222,7 @@ $stmt->execute([$deck_id, $user_id]);
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer; /* Keep cursor pointer for visual feedback */
+            cursor: pointer;
         }
 
         .flip-card:hover {
@@ -295,7 +306,7 @@ $stmt->execute([$deck_id, $user_id]);
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold tracking-wide">Study - <?php echo htmlspecialchars($deck['title']); ?></h1>
             <div class="flex space-x-6">
-                <a href="index.php" class="btn-secondary flex items-center"><i class="fas fa-arrow-left mr-2"></i> Back to Dashboard</a>
+                <a href="view_decks.php" class="btn-secondary flex items-center"><i class="fas fa-arrow-left mr-2"></i> Back to View Decks</a>
             </div>
         </div>
     </header>

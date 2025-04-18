@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold tracking-wide">Add Flashcards</h1>
             <div class="flex space-x-6">
-                <a href="view_decks.php" class="btn-secondary flex items-center"><i class="fas fa-arrow-left mr-2"></i> Back to Decks</a>
+                <a href="index.php" class="btn-secondary flex items-center"><i class="fas fa-arrow-left mr-2"></i> Back to Dashboard</a>
             </div>
         </div>
     </header>

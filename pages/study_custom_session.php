@@ -265,7 +265,7 @@ if ($deck_id > 0) {
             <?php if ($deck_id > 0): ?>
                 <!-- Studying a Deck -->
                 <?php if (!empty($flashcards)): ?>
-                    <div class="flip-card w-full bg-white rounded-lg shadow-md cursor-pointer animated-section" onclick="flipCard()" id="flipCard">
+                    <div class="flip-card w-full bg-white rounded-lg shadow-md cursor-pointer animated-section text-black" onclick="flipCard()" id="flipCard">
                         <div class="flip-card-inner">
                             <div class="flip-card-front" id="front">
                                 <p class="text-xl font-semibold text-center"><?php echo htmlspecialchars($current_flashcard['question'] ?? 'Loading...'); ?></p>

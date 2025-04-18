@@ -226,11 +226,12 @@ $section = $_GET['section'] ?? 'stats';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link href="../src/output.css" rel="stylesheet">
-    <link href "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js" defer></script>
+    <!-- Load Chart.js and GSAP synchronously to avoid script loading issues -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -304,8 +305,7 @@ $section = $_GET['section'] ?? 'stats';
         .deck-card {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 12px;
-            padding: 1.5rem 1.5rem 2rem 1.5rem;
-            /* Increased bottom padding */
+            padding: 1.5rem;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -313,17 +313,6 @@ $section = $_GET['section'] ?? 'stats';
         .deck-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-action {
-            padding: 0.4rem 0.8rem;
-            /* Reduced padding for compactness */
-            border-radius: 0.5rem;
-            transition: background 0.3s ease, transform 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
         }
 
         .btn-edit {
@@ -347,7 +336,7 @@ $section = $_GET['section'] ?? 'stats';
         }
 
         .btn-delete {
-            background: #ef4444;
+            background: っきり#ef4444;
             color: white;
         }
 
@@ -410,19 +399,6 @@ $section = $_GET['section'] ?? 'stats';
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
         }
 
-        .deck-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .deck-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-
         .calendar-day-label {
             text-align: center;
             font-size: 0.75rem;
@@ -449,6 +425,90 @@ $section = $_GET['section'] ?? 'stats';
             width: 1rem;
             height: 1rem;
             border-radius: 0.25rem;
+        }
+
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header i {
+            color: #ef4444;
+            font-size: 2rem;
+            margin-right: 0.5rem;
+        }
+
+        .modal h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .modal p {
+            color: #4b5563;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .modal-btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .modal-btn-confirm {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #d1d5db;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -589,11 +649,7 @@ $section = $_GET['section'] ?? 'stats';
                                 <?php foreach ($achievements as $achievement): ?>
                                     <div class="achievement-card">
                                         <div class="flex items-center space-x-4">
-                                            <?php if ($achievement['badge_icon']): ?>
-                                                <img src="../assets/badges/<?php echo htmlspecialchars($achievement['badge_icon']); ?>" alt="Badge" class="w-12 h-12 object-cover rounded-full">
-                                            <?php else: ?>
-                                                <i class="fas fa-trophy text-gray-400 text-3xl"></i>
-                                            <?php endif; ?>
+                                            <img src="../assets//star_badge.png" alt="Star Achievement Badge" class="w-12 h-12 object-cover rounded-full">
                                             <div>
                                                 <h3 class="text-lg font-semibold text-gray-800"><?php echo htmlspecialchars($achievement['name']); ?></h3>
                                                 <p class="text-gray-600 text-sm"><?php echo htmlspecialchars($achievement['description']); ?></p>
@@ -687,9 +743,9 @@ $section = $_GET['section'] ?? 'stats';
                                             <a href="add_flashcards.php?deck_id=<?php echo $deck['id']; ?>" class="btn-action btn-add">
                                                 <i class="fas fa-plus"></i> Add Flashcards
                                             </a>
-                                            <a href="delete_deck.php?deck_id=<?php echo $deck['id']; ?>" class="btn-action btn-delete" onclick="return confirm('Are you sure you want to delete this deck? This action cannot be undone.');">
+                                            <button class="btn-action btn-delete" data-deck-id="<?php echo $deck['id']; ?>">
                                                 <i class="fas fa-trash"></i> Delete
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -700,6 +756,21 @@ $section = $_GET['section'] ?? 'stats';
             </div>
         </div>
     </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <i class="fas fa-trash"></i>
+                <h2>Confirm Deletion</h2>
+            </div>
+            <p>Are you sure you want to delete this deck? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="cancelDelete">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script>
@@ -771,6 +842,85 @@ $section = $_GET['section'] ?? 'stats';
                 opacity: 0,
                 duration: 0.6,
                 ease: 'power2.out'
+            });
+        });
+
+        // Delete Modal Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('deleteModal');
+            const confirmBtn = document.getElementById('confirmDelete');
+            const cancelBtn = document.getElementById('cancelDelete');
+            let currentDeckId = null;
+
+            // Open modal when delete button is clicked
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentDeckId = this.getAttribute('data-deck-id');
+                    modal.style.display = 'flex';
+                    gsap.fromTo(modal.querySelector('.modal'), {
+                        scale: 0.8,
+                        opacity: 0
+                    }, {
+                        scale: 1,
+                        opacity: 1,
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
+            });
+
+            // Close modal on cancel
+            cancelBtn.addEventListener('click', function() {
+                gsap.to(modal.querySelector('.modal'), {
+                    scale: 0.8,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        modal.style.display = 'none';
+                        currentDeckId = null;
+                    }
+                });
+            });
+
+            // Confirm deletion
+            confirmBtn.addEventListener('click', function() {
+                if (currentDeckId) {
+                    window.location.href = `delete_deck.php?deck_id=${currentDeckId}`;
+                }
+            });
+
+            // Close modal on overlay click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    gsap.to(modal.querySelector('.modal'), {
+                        scale: 0.8,
+                        opacity: 0,
+                        duration: 0.3,
+                        ease: 'power2.in',
+                        onComplete: () => {
+                            modal.style.display = 'none';
+                            currentDeckId = null;
+                        }
+                    });
+                }
+            });
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    gsap.to(modal.querySelector('.modal'), {
+                        scale: 0.8,
+                        opacity: 0,
+                        duration: 0.3,
+                        ease: 'power2.in',
+                        onComplete: () => {
+                            modal.style.display = 'none';
+                            currentDeckId = null;
+                        }
+                    });
+                }
             });
         });
     </script>

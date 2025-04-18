@@ -6,9 +6,11 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
+// By doing this we are able to import pdo...
 include '../includes/db.php';
 $user_id = $_SESSION['user_id'];
 
+// We are fetching the categories here...
 try {
   $stmt = $pdo->prepare("SELECT id, name FROM categories ORDER BY name ASC");
   $stmt->execute();
@@ -19,23 +21,26 @@ try {
   $error = "Failed to load categories. Please try again later.";
 }
 
+// The below represents the usage of null coalescing operator.
 $selected_categories = $_POST['categories'] ?? [];
 $selected_status = $_POST['status'] ?? 'all';
 $sort_by = $_POST['sort_by'] ?? 'none';
 $sort_order = $_POST['sort_order'] ?? 'DESC';
 
-$where_clause = "WHERE d.user_id = ?";
-$params = [$user_id];
+//Note: Here, we are creating the SQL query dynamically considering the user filters.
+$where_clause = "";
+$params = [];
 
 if (!empty($selected_categories)) {
   $selected_categories = array_map('intval', $selected_categories);
   $placeholders = implode(',', array_fill(0, count($selected_categories), '?'));
-  $where_clause .= " AND d.category_id IN ($placeholders)";
+  $where_clause .= " WHERE d.category_id IN ($placeholders)";
   $params = array_merge($params, $selected_categories);
 }
 
 if ($selected_status !== 'all') {
-  $where_clause .= " AND d.is_mastered = ?";
+  $where_clause .= empty($where_clause) ? " WHERE " : " AND ";
+  $where_clause .= "udm.is_mastered = ?";
   $params[] = $selected_status === 'completed' ? 1 : 0;
 }
 
@@ -49,14 +54,18 @@ if ($sort_by !== 'none') {
   }
 }
 
+// The dynamic query is used here to fetch the decks...
 try {
   $stmt = $pdo->prepare("
-        SELECT d.id, d.title, d.description, d.created_at, d.last_studied, d.reminder_interval, d.is_mastered, c.name AS category_name
+        SELECT d.id, d.title, d.description, d.created_at, d.last_studied, d.reminder_interval, 
+               COALESCE(udm.is_mastered, 0) AS is_mastered, c.name AS category_name
         FROM decks d
         LEFT JOIN categories c ON d.category_id = c.id
+        LEFT JOIN user_deck_mastery udm ON d.id = udm.deck_id AND udm.user_id = ?
         $where_clause
         $order_clause
     ");
+  $params = array_merge([$user_id], $params);
   $stmt->execute($params);
   $decks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
@@ -215,6 +224,7 @@ try {
           <div class="mb-4">
             <h3 class="text-lg font-medium text-gray-700 mb-2">Category</h3>
             <div class="space-y-2 max-h-40 overflow-y-auto">
+              <!-- The fetched categories will loop here to appear on ui-->
               <?php foreach ($categories as $category): ?>
                 <label class="flex items-center">
                   <input type="checkbox" name="categories[]" value="<?php echo $category['id']; ?>"
@@ -278,11 +288,11 @@ try {
       <!-- Decks List -->
       <div class="w-full md:w-3/4">
         <div class="bg-white p-6 rounded-lg shadow-md">
-          <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Decks</h2>
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6">All Decks</h2>
           <?php if (empty($decks)): ?>
             <p class="text-gray-600 text-lg">No decks found. Create one to get started!</p>
           <?php else: ?>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" style="gap: 40px;"> <!-- Ensured gap-10 (40px) with fallback -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" style="gap: 40px;">
               <?php foreach ($decks as $deck): ?>
                 <div class="deck-card animated-card">
                   <div class="deck-inner">

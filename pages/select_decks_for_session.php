@@ -16,7 +16,7 @@ if ($session_id <= 0) {
     exit();
 }
 
-// Fetch the custom study session
+// Fetch the custom study session table
 $stmt = $pdo->prepare("SELECT name, time_limit FROM custom_study_sessions WHERE id = ? AND user_id = ?");
 $stmt->execute([$session_id, $user_id]);
 $session = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -26,22 +26,21 @@ if (!$session) {
     exit();
 }
 
-// Fetch categories for the filter form
+// Fetch categories
 $stmt = $pdo->prepare("SELECT id, name FROM categories ORDER BY name ASC");
 $stmt->execute();
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Handle filters and sorting
+// Handle filters and sorting 
 $selected_categories = $_POST['categories'] ?? [];
 $sort_by = $_POST['sort_by'] ?? 'none';
 $sort_order = $_POST['sort_order'] ?? 'DESC';
 
-// Build parameters array starting with JOIN condition
-$params = [$user_id]; // For LEFT JOIN's sd.shared_with = ?
+$params = [$user_id]; 
 
 // Build WHERE clause
 $where_clause = "WHERE (d.user_id = ? OR sd.shared_with = ?)";
-array_push($params, $user_id, $user_id); // Add WHERE clause parameters
+array_push($params, $user_id, $user_id); 
 
 // Filter by categories
 if (!empty($selected_categories)) {
@@ -58,7 +57,6 @@ if ($sort_by !== 'none' && $sort_by === 'created_at') {
     $order_clause = "ORDER BY d.created_at $sort_direction";
 }
 
-// Final query with proper placeholder sequence
 $query = "
     SELECT d.*, u.username AS owner_name, 
            COUNT(f.id) AS total_flashcards,
@@ -293,7 +291,8 @@ $decks = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 ease: "power2.out"
             });
         });
-
+        
+        // Handling the start session button...
         document.addEventListener('DOMContentLoaded', () => {
             const deckCards = document.querySelectorAll('.deck-card');
             const startSessionBtn = document.getElementById('start-session-btn');

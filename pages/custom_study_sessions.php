@@ -28,6 +28,27 @@ $user_id = $_SESSION['user_id'];
         .btn-primary {
             @apply bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded hover:from-purple-700 hover:to-indigo-700 transition duration-300;
         }
+
+        /* Input Text Color Fix */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select {
+            color: #374151 !important;
+        }
+
+        input::placeholder {
+            color: #9CA3AF !important;
+            opacity: 1 !important;
+        }
+
+        /* Focus styles for better accessibility */
+        input:focus, textarea:focus, select:focus {
+            outline: 2px solid #8B5CF6;
+            outline-offset: 2px;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script>

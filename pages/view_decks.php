@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 
-// By doing this we are able to import pdo...
+// By doing this we are able to import pdo for which is used for database ops...
 include '../includes/db.php';
 $user_id = $_SESSION['user_id'];
 

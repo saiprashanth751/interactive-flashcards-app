@@ -65,7 +65,7 @@ try {
     $suggested_decks = [];
 }
 
-// Function to check achievements
+// Function to check achievements...ai code
 function checkAchievements($pdo, $user_id) {
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_deck_mastery WHERE user_id = ? AND is_mastered = 1");
     $stmt->execute([$user_id]);

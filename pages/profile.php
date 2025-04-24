@@ -153,7 +153,7 @@ try {
     $decks = [];
 }
 
-// Handle form submissions
+// Handle form submissions -- User information.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_email'])) {
         $new_email = $_POST['email'];
@@ -731,6 +731,7 @@ $section = $_GET['section'] ?? 'stats';
                         <?php if (empty($decks)): ?>
                             <p class="text-gray-600">You haven't created any decks yet. <a href="create_deck.php" class="text-blue-600 hover:underline">Create one now!</a></p>
                         <?php else: ?>
+                            <!-- Cards -->
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <?php foreach ($decks as $deck): ?>
                                     <div class="deck-card">

@@ -286,7 +286,7 @@ $challenge_completed = false; // Replace with actual logic later
             <p class="text-sm">© 2025 Flashcard Project. All rights reserved.</p>
             <div class="mt-2 sm:mt-0 space-x-4">
                 <a href="about.php" class="text-sm text-white hover:underline transition duration-300">About Us</a>
-                <a href="contact.php" class="text-sm text-white hover:underline transition duration-300">Contact</a>
+                <!-- <a href="contact.php" class="text-sm text-white hover:underline transition duration-300">Contact</a> -->
             </div>
         </div>
     </footer>

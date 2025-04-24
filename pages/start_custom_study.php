@@ -31,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: custom_study_sessions.php?error=invalid_input");
             exit();
         }
-    } elseif (isset($_POST['start_session'])) {
+    } 
+    elseif (isset($_POST['start_session'])) {
         // From select_decks_for_session.php: Start the session with selected decks
         $session_id = $_POST['session_id'] ?? 0;
         $selected_decks = $_POST['decks'] ?? [];
